@@ -1,0 +1,119 @@
+.normal {
+    background-image: url("img/normal.png");
+    animation: normal_anim 0.95s steps(19) infinite;
+}
+@keyframes normal_anim {
+    from { background-position: 0 }
+    to { background-position: -1900px}
+}
+
+.fail {
+    background-image: url("img/fail.png");
+    animation: fail_anim forwards 0.6s steps(12) 1;
+}
+@keyframes fail_anim {
+    from { background-position: 0 }
+    to { background-position: -1200px; }
+}
+
+.hello {
+    background-image: url("img/hello.png");
+    animation: hello_anim_h 0.1s steps(2) 15, hello_anim_v 1.5s steps(15) 1;
+}
+@keyframes hello_anim_h {
+    from {background-position-x: 0}
+    to {background-position-x: -200px;}
+}
+@keyframes hello_anim_v {
+    from {background-position-y: 0}
+    to {background-position-y: -1500px}
+}
+
+.asking {
+    background-image: url("img/asking.png");
+    animation: asking_anim_h 0.25s steps(5) 5, asking_anim_v 1.25s steps(5) 1;
+}
+@keyframes asking_anim_h {
+    from {background-position-x: 0}
+    to {background-position-x: -500px;}
+}
+@keyframes asking_anim_v {
+    from {background-position-y: 0}
+    to {background-position-y: -500px}
+}
+
+.openMouth {
+    background-image: url("img/open_mouth.png");
+    animation: openMouth_anim forwards 0.4s steps(8) 1;
+}
+@keyframes openMouth_anim {
+    from {background-position: 0}
+    to {background-position: -800px}
+}
+
+.closeMouth {
+    background-image: url("img/close_mouth.png");
+    animation: closeMouth_anim 0.1s steps(2) 1;
+}
+@keyframes closeMouth_anim {
+    from {background-position: 0}
+    to {background-position: -200px}
+}
+
+.closeWide {
+    background-image: url("img/open_wide.png");
+    animation: closeWide_anim forwards 0.1s steps(1) 1;
+}
+@keyframes closeWide_anim {
+    from {background-position: -100px}
+    to {background-position: 0}
+}
+
+.openWide {
+    background-image: url("img/open_wide.png");
+    animation: openWide_anim forwards 0.05s steps(1) 1;
+}
+@keyframes openWide_anim {
+    from {background-position: 0}
+    to {background-position: -100px}
+}
+
+.chewing {
+    background-image: url("img/chewing.png");
+    animation: chewing_anim 0.45s steps(9) 6;
+}
+@keyframes chewing_anim {
+    from {background-position: 0}
+    to {background-position: -900px}
+}
+
+.disappointed {
+    background-image: url("img/disappointed.png");
+    animation: disappointed_anim_h 0.1s steps(2) 14, disappointed_anim_v 1.4s steps(14) 1;
+}
+@keyframes disappointed_anim_h {
+    from {background-position-x: 0}
+    to {background-position-x: -200px;}
+}
+@keyframes disappointed_anim_v {
+    from {background-position-y: 0}
+    to {background-position-y: -1400px}
+}
+
+.excited {
+    background-image: url("img/excited.png");
+    animation: excited_anim 1s steps(20) 1;
+}
+@keyframes excited_anim {
+    from {background-position: 0}
+    to {background-position: -2000px}
+}
+
+.impatient {
+    background-image: url("img/impatient.png");
+    animation: impatient_anim 0.8s steps(16) 3;
+}
+@keyframes impatient_anim {
+    from {background-position: 0}
+    to {background-position: -1600px}
+}

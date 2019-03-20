@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<title>Игра для клиентов логопеда</title>
+	<style type="text/css">
+		body * {
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+		.word {
+			cursor: grab;
+			display: inline-block;
+			background-color: bisque;
+			padding: 5px;
+			border: 1px solid black;
+		}
+
+		.monster_area {
+			border: black solid 1px;
+			padding: 25px;
+			width: 200px;
+		}
+		.monster_area div {
+			overflow: hidden;
+			background-repeat: no-repeat;
+			width: 100px;
+			height: 100px;
+		}
+		#amnyam {
+			filter: hue-rotate(30deg);
+		}
+		#omnomnom {
+			filter: hue-rotate(-30deg);
+		}
+	</style>
+	<link rel="stylesheet" href="animations.css" type="text/css"/>
+</head>
+<body>
+	<script>
+        let mouseHandler = new function() {
+            this.dragElement = null;
+            let self = this;
+
+            let onmousemove = function(e) {
+                self.dragElement.style.left = e.pageX - self.dragElement.mouseOffset.x + 'px';
+                self.dragElement.style.top = e.pageY - self.dragElement.mouseOffset.y + 'px';
+            };
+
+            let onmouseup = function() {
+                document.onmousemove = null;
+                self.dragElement.onmouseup = null;
+                document.body.style.cursor = 'auto';
+                self.dragElement.style.cursor = 'grab';
+                self.dragElement.style.zIndex = '100';
+                self.dragElement.style.pointerEvents = "auto";
+                self.dragElement = null;
+            };
+
+            this.onmousedown = function (e) {
+                if (e.button !== 0 || // если клик не левой кнопкой мыши
+                    !e.target.classList.contains('word')) { // или щелкнули не по слову
+                    return; // то не запускаем перенос
+                }
+                let target = e.target;
+                let coords = getCoords(target);
+                let offset = {x: e.pageX - coords.left, y: e.pageY - coords.top};
+                self.dragElement = target;
+                self.dragElement.mouseOffset = offset;
+                document.onmousemove = onmousemove;
+                document.onmouseup = onmouseup;
+                target.style.zIndex = '101';
+                target.style.pointerEvents = "none";
+                target.style.cursor = document.body.style.cursor = 'grabbing';
+                target.style.transition = '';
+                if (target.parentElement !== document.body) {
+                    target.style.position = 'absolute';
+                    target.initialPos = coords;
+                    document.body.appendChild(target);
+                    onmousemove(e);
+                }
+
+                function getCoords(elem) {   // кроме IE8-
+                    let box = elem.getBoundingClientRect();
+                    return {
+                        top: box.top + pageYOffset,
+                        left: box.left + pageXOffset
+                    };
+                }
+            };
+
+        };
+
+        document.onmousedown = mouseHandler.onmousedown;
+
+        class monster {
+            constructor(view) {
+                this.animQueue = null;
+                this.view = view;
+                this.delayTimer = null;
+                view.addEventListener('animationend', this.onAnimationEnd.bind(this));
+                this.playDelayed('hello', Math.random()*2000);
+                this.sound = document.getElementById("sfx");
+                let myArea = view.closest('.monster_area');
+                myArea.onmouseenter = this.onEnterArea.bind(this);
+                myArea.onmousedown = this.onEnterArea.bind(this);
+                myArea.onmouseleave = this.onLeaveArea.bind(this);
+                myArea.onmouseup = this.onLeaveArea.bind(this);
+                view.onmouseenter = this.onEnter.bind(this);
+                view.onmouseleave = this.onLeave.bind(this);
+                view.onmouseup = this.onDrop.bind(this);
+            }
+
+            onAnimationEnd() {
+                if(this.animQueue.length) {
+                    let animName = this.animQueue.shift();
+                    if(animName === 'normal') {//обычное поведение прерывается случайными действиями
+                        this.playDelayedRandom();
+                    }
+                    this.view.className = animName;
+                }
+            }
+
+            setBrothers(brothers) {
+                this.brothers = brothers;
+            }
+
+            play(animations) {
+                clearTimeout(this.delayTimer);
+                if(animations.push) {
+                    this.animQueue = animations;
+                }
+                else {
+                    this.animQueue = [animations];
+                }
+                this.view.dispatchEvent(new Event("animationend"));
+            }
+
+            playGetNormal(animations) {
+                if(animations.push) {
+                    animations.push('normal');
+                }
+                else {
+                    animations = [animations, 'normal'];
+                }
+                this.play(animations);
+            }
+
+            playDelayed(animName, delay) {
+                clearTimeout(this.delayTimer);
+                this.delayTimer = setTimeout(this.playGetNormal.bind(this, animName), delay);
+            }
+
+            playDelayedRandom() {
+                this.playDelayed(['hello', 'asking', 'impatient'][Math.floor(Math.random() * 3)], 15000+Math.random()*15000);
+            }
+
+            doFail() {
+                this.play(['closeWide', 'closeMouth', 'fail']);
+                this.playDelayedRandom();
+                this.sound.src = "audio/monster_sad.m4a";
+                this.sound.play();
+            }
+
+            doEat() {
+                this.playGetNormal(['closeWide', 'closeMouth', 'chewing']);
+                this.sound.src = "audio/monster_chewing.m4a";
+                this.sound.play();
+            }
+
+            onEnter() {
+                if(!mouseHandler.dragElement) return;
+                this.play('openWide');
+            }
+
+            onLeave() {
+                if(!mouseHandler.dragElement) return;
+	            this.play('closeWide');
+            }
+
+            onEnterArea() {
+                if(!mouseHandler.dragElement) return;
+				this.play('openMouth');
+                this.sound.src = "audio/monster_open.m4a";
+                this.sound.play();
+            }
+
+            onLeaveArea() {
+                if(!mouseHandler.dragElement) return;
+                this.playGetNormal(['closeMouth', 'disappointed']);
+                this.sound.src = "audio/monster_close.m4a";
+                this.sound.play();
+            }
+
+            onDrop() {
+                if(!mouseHandler.dragElement) return;
+                this.brothers.forEach(brother => brother.playDelayed('excited', Math.random()*1000));
+                // mouseHandler.dragElement.style.transition = 'left 1s top 1s ease-in-out;';
+	            mouseHandler.dragElement.style.transitionProperty = 'left top';
+	            mouseHandler.dragElement.style.transitionDuration = '1s';
+                mouseHandler.dragElement.style.left = mouseHandler.dragElement.initialPos.left + 'px';
+                mouseHandler.dragElement.style.top = mouseHandler.dragElement.initialPos.top + 'px';
+            }
+        }
+
+	</script>
+	<!--<audio id="music" src="audio/game_music.m4a" autoplay="autoplay" onload="alert('music loaded')" loop="loop"></audio>-->
+	<audio id="sfx"></audio>
+	<div style="float:left">
+		<div class="monster_area">
+			<div id="am"></div>
+			<span>Ам</span>
+		</div>
+		<div class="monster_area">
+			<div id="amnyam"></div>
+			<span>Ам-ням</span>
+		</div>
+		<div class="monster_area">
+			<div id="omnomnom"></div>
+			<span>Ом-ном-ном</span>
+		</div>
+	</div>
+	<div id="wordList" style="float:left; width:200px; text-align: right;">
+		<div class="row"><span class="word">Сок</span></div>
+		<div class="row"><span class="word">Чай</span></div>
+		<div class="row"><span class="word">Хлеб</span></div>
+		<div class="row"><span class="word">Сыр</span></div>
+		<div class="row"><span class="word">Вода</span></div>
+		<div class="row"><span class="word">Компот</span></div>
+		<div class="row"><span class="word">Рыба</span></div>
+		<div class="row"><span class="word">Мясо</span></div>
+		<div class="row"><span class="word">Молоко</span></div>
+		<div class="row"><span class="word">Лимонад</span></div>
+		<div class="row"><span class="word">Картошка</span></div>
+		<div class="row"><span class="word">Курица</span></div>
+	</div>
+<!--	<input id="fail" type="button" value="fail" />
+	<input id="eat" type="button" value="eat" />
+	<input id="onEnter" type="button" value="onEnter"/>
+	<input id="onLeave" type="button" value="onLeave"/>
+	<input id="onEnterArea" type="button" value="onEnterArea"/>
+	<input id="onLeaveArea" type="button" value="onLeaveArea"/>
+	<input id="onDrop" type="button" value="onDrop"/>-->
+	<script>
+		for(let row of document.getElementById('wordList').children) {
+		    row.style.height = row.offsetHeight+'px'; //фиксируем высоту, чтобы не схлопнулись без содержимого
+		}
+        let images = ['disappointed.png', 'excited.png', 'fail.png', 'hello.png', 'impatient.png', 'normal.png', 'chewing.png',
+	        'open_mouth.png', 'asking.png', 'open_wide.png', 'close_mouth.png'];
+        for(let i = 0; i < images.length; i++) {
+            let img = document.createElement('img');
+            let div = document.createElement('div');
+            div.appendChild(img);
+            div.style.overflow = "hidden";
+            div.style.height = '1px';
+            img.src = 'img/'+images[i];//для предзагрузки картинок с анимацией;
+	        document.body.appendChild(div);
+        }
+        let am = new monster(document.getElementById('am'));
+		let amnyam = new monster(document.getElementById('amnyam'));
+		let omnomnom = new monster(document.getElementById('omnomnom'));
+		am.setBrothers([amnyam, omnomnom]);
+        omnomnom.setBrothers([amnyam, am]);
+        amnyam.setBrothers([am, omnomnom]);
+		/*document.getElementById('fail').onclick = function () {
+            am.doFail();
+        };
+        document.getElementById('eat').onclick = function() {
+            am.doEat();
+        };
+        document.getElementById('onEnter').onclick = function() {
+            am.onEnter();
+        };
+        document.getElementById('onLeave').onclick = function() {
+            am.onLeave();
+        };
+        document.getElementById('onEnterArea').onclick = function() {
+            am.onEnterArea();
+        };
+        document.getElementById('onLeaveArea').onclick = function() {
+            am.onLeaveArea();
+        };
+        document.getElementById('onDrop').onclick = function() {
+            am.onDrop();
+        };*/
+	</script>
+</body>
+</html>
