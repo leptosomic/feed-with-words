@@ -113,6 +113,10 @@
     background-image: url("img/impatient.png");
     animation: impatient_anim 0.8s steps(16) 3;
 }
+.loader {
+    background-image: url("img/impatient.png");
+    animation: impatient_anim 0.8s steps(16) infinite;
+}
 @keyframes impatient_anim {
     from {background-position: 0}
     to {background-position: -1600px}
