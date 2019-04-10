@@ -41,8 +41,11 @@
 		#omNomNom {
 			filter: hue-rotate(-30deg);
 		}
+		#header>div {
+			display: inline-block;
+		}
 		#wordList>div {
-			float:right;
+			float: right;
 			clear: both;
 		}
 	</style>
@@ -77,6 +80,7 @@
 		Загрузка: <span id="loaded_percents">0%</span>
 	</div>
 	<audio src="audio/game_music.m4a" autoplay loop></audio>
+	<audio id="win" src="audio/win.m4a"></audio>
 	<script src="preloader.js"></script>
 	<script src="drag_handler.js"></script>
 	<script src="monster.js"></script>
@@ -92,9 +96,8 @@
 	        }
         }
 
-        let audio;
         //todo грузить аудио только если не установлена кука
-        audio = loadMedia('img/',
+        let audio = loadMedia('img/',
 			['impatient.png', 'disappointed.png', 'excited.png', 'fail.png', 'hello.png', 'normal.png', 'chewing.png',
             'open_mouth.png', 'asking.png', 'open_wide.png', 'close_mouth.png'],
 			'audio/',
@@ -122,8 +125,9 @@
                 });
                 dragHandler.addDragZones([monster.view, monster_area]);
             }
+            let draggable = document.getElementsByClassName('draggable');
 
-            function onMonsterDragDrop(e) {
+                function onMonsterDragDrop(e) {
                 for(let i=0, len=monsters.length; i<len; i++) {
                     if(monsters[i]!==this) {
                         monsters[i].playDelayed('excited', Math.random()*1000);
@@ -132,6 +136,9 @@
 	            if(this.view.dataset.syllablesNum === e.detail.dragObject.dataset.syllablesNum) {
 	                this.doEat();
 	                document.body.removeChild(e.detail.dragObject);
+                    if(draggable.length === 0) {
+                        document.getElementById('win').play();
+                    }
 	            }
 	            else {
 	                this.doFail();
@@ -139,8 +146,8 @@
 	            }
             }
 
-            buildWordList(words, document.getElementById('wordList'), {shuffle:true});
-            buildWordListInPlace(document.getElementById('header'), {inline: true});
+            buildWordList(words, document.getElementById('wordList'), true);
+            buildWordListInPlace(document.getElementById('header'));
 		}
 	</script>
 </body>
